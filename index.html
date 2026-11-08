@@ -34,15 +34,15 @@
                 </div>
             </div>
             <nav id="nav">
-                <button class="nav-btn active" data-section="dashboard">🏠 Dashboard</button>
-                <button class="nav-btn" data-section="linear">⚖️ Linear Equations</button>
-                <button class="nav-btn" data-section="systems">🔗 Systems</button>
-                <button class="nav-btn" data-section="quadratic">📈 Quadratics</button>
-                <button class="nav-btn" data-section="polynomials">🧩 Polynomials</button>
-                <button class="nav-btn" data-section="exponents">⚡ Exponents</button>
-                <button class="nav-btn" data-section="rational">➗ Rational</button>
-                <button class="nav-btn" data-section="tools">🛠️ Tools</button>
-                <button class="nav-btn" data-section="achievements">🏆 Achievements</button>
+                <button class="nav-btn active" onclick="showSection('dashboard')">🏠 Dashboard</button>
+                <button class="nav-btn" onclick="showSection('linear')">⚖️ Linear Equations</button>
+                <button class="nav-btn" onclick="showSection('systems')">🔗 Systems</button>
+                <button class="nav-btn" onclick="showSection('quadratic')">📈 Quadratics</button>
+                <button class="nav-btn" onclick="showSection('polynomials')">🧩 Polynomials</button>
+                <button class="nav-btn" onclick="showSection('exponents')">⚡ Exponents</button>
+                <button class="nav-btn" onclick="showSection('rational')">➗ Rational</button>
+                <button class="nav-btn" onclick="showSection('tools')">🛠️ Tools</button>
+                <button class="nav-btn" onclick="showSection('achievements')">🏆 Achievements</button>
             </nav>
             <div class="progress-summary" id="progressSummary">
                 <h3>Overall Progress</h3>
@@ -51,7 +51,6 @@
             </div>
         </aside>
         <main class="main" id="mainContent">
-            <!-- Static fallback so something always shows -->
             <div class="section">
                 <h2>Welcome, Algebra Explorer!</h2>
                 <p>Earn XP, build streaks, and unlock achievements as you master algebra. Every correct answer levels you up.</p>
@@ -71,5 +70,14 @@
     </div>
     <div id="confetti-container"></div>
     <script src="app.js"></script>
+    <script>
+        // Fallback in case app.js is slow or blocked
+        if (typeof showSection !== 'function') {
+            window.showSection = function(section) {
+                const main = document.getElementById('mainContent');
+                main.innerHTML = `<div class="section"><h2>${section.charAt(0).toUpperCase() + section.slice(1)}</h2><div class="card"><p>Loading interactive content...</p><p>If this message stays, try refreshing the page or check that app.js is loading.</p></div></div>`;
+            };
+        }
+    </script>
 </body>
 </html>
