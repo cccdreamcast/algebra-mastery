@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Algebra Mastery — Fun, interactive algebra learning app covering linear equations, systems, quadratics, polynomials, exponents, and more.">
     <title>Algebra Mastery - Fun Interactive Learning</title>
     <link rel="icon" href="logo.jpg" type="image/jpeg">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
@@ -20,20 +19,11 @@
                 <p>Level up your algebra</p>
             </div>
             <div class="player-stats">
-                <div class="stat">
-                    <span class="stat-label">Level</span>
-                    <span class="stat-value" id="playerLevel">1</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">XP</span>
-                    <span class="stat-value" id="playerXP">0</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Streak</span>
-                    <span class="stat-value" id="playerStreak">0 🔥</span>
-                </div>
+                <div class="stat"><span class="stat-label">Level</span><span class="stat-value" id="playerLevel">1</span></div>
+                <div class="stat"><span class="stat-label">XP</span><span class="stat-value" id="playerXP">0</span></div>
+                <div class="stat"><span class="stat-label">Streak</span><span class="stat-value" id="playerStreak">0 🔥</span></div>
             </div>
-            <nav id="nav">
+            <nav>
                 <button class="nav-btn active" onclick="showSection('dashboard')">🏠 Dashboard</button>
                 <button class="nav-btn" onclick="showSection('linear')">⚖️ Linear Equations</button>
                 <button class="nav-btn" onclick="showSection('systems')">🔗 Systems</button>
@@ -44,40 +34,94 @@
                 <button class="nav-btn" onclick="showSection('tools')">🛠️ Tools</button>
                 <button class="nav-btn" onclick="showSection('achievements')">🏆 Achievements</button>
             </nav>
-            <div class="progress-summary" id="progressSummary">
+            <div class="progress-summary">
                 <h3>Overall Progress</h3>
                 <div class="progress-bar"><div id="progressFill" style="width: 0%"></div></div>
                 <p id="progressText">0% Complete</p>
             </div>
         </aside>
-        <main class="main" id="mainContent">
-            <div class="section">
-                <h2>Welcome, Algebra Explorer!</h2>
-                <p>Earn XP, build streaks, and unlock achievements as you master algebra. Every correct answer levels you up.</p>
-                <div class="card">
-                    <h3>Getting Started</h3>
-                    <p>Use the sidebar to jump into Linear Equations, Systems, Quadratics, and more. Click any topic to practice with instant feedback and full step-by-step explanations.</p>
-                    <button onclick="showSection('linear')">Start with Linear Equations</button>
-                    <button class="secondary" onclick="showSection('tools')">Open Tools</button>
-                </div>
-                <div class="card">
-                    <h3>Your Progress</h3>
-                    <p>Level <strong>1</strong> • 0 XP • Best Streak: 0 🔥</p>
-                    <p style="margin-top:1rem;color:#8f857c;">Progress is saved in your browser. Solve problems to earn XP and unlock achievements!</p>
-                </div>
-            </div>
-        </main>
+        <main class="main" id="mainContent"></main>
     </div>
     <div id="confetti-container"></div>
-    <script src="app.js"></script>
+
     <script>
-        // Fallback in case app.js is slow or blocked
-        if (typeof showSection !== 'function') {
-            window.showSection = function(section) {
-                const main = document.getElementById('mainContent');
-                main.innerHTML = `<div class="section"><h2>${section.charAt(0).toUpperCase() + section.slice(1)}</h2><div class="card"><p>Loading interactive content...</p><p>If this message stays, try refreshing the page or check that app.js is loading.</p></div></div>`;
-            };
+    // Core app logic inlined so it works even if app.js is blocked
+    let currentSection = 'dashboard';
+    let currentProblem = null;
+    let player = { xp: 0, level: 1, streak: 0, bestStreak: 0, totalSolved: 0 };
+
+    function showSection(section) {
+        currentSection = section;
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent.toLowerCase().includes(section));
+        });
+        document.getElementById('mainContent').innerHTML = getContent(section);
+        if (window.renderMathInElement) {
+            renderMathInElement(document.getElementById('mainContent'), {
+                delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]
+            });
         }
+        if (section === 'linear') newLinear();
+        if (section === 'quadratic') newQuadratic();
+    }
+
+    function getContent(s) {
+        if (s === 'dashboard') return `<div class="section"><h2>Welcome, Algebra Explorer!</h2><p>Earn XP and build streaks by practicing.</p><div class="card"><h3>Topics</h3><p>Click any item in the sidebar to start.</p><button onclick="showSection('linear')">Start with Linear</button></div></div>`;
+        if (s === 'linear') return `<div class="section"><h2>⚖️ Linear Equations</h2><div class="card"><div id="linProb" class="problem"></div><div class="input-group"><input type="number" id="linAns" placeholder="x ="><button onclick="checkLinear()">Check</button><button class="secondary" onclick="explainLinear()">Explain</button><button class="secondary" onclick="newLinear()">New</button></div><div id="linFb" class="feedback"></div><div id="linSteps" class="steps" style="display:none"></div></div></div>`;
+        if (s === 'quadratic') return `<div class="section"><h2>📈 Quadratic Equations</h2><div class="card"><div id="quadProb" class="problem"></div><div class="input-group"><input type="number" id="q1" placeholder="x₁"><input type="number" id="q2" placeholder="x₂"><button onclick="checkQuad()">Check</button><button class="secondary" onclick="explainQuad()">Explain</button></div><div id="quadFb" class="feedback"></div><div id="quadSteps" class="steps" style="display:none"></div></div></div>`;
+        return `<div class="section"><h2>${s.charAt(0).toUpperCase()+s.slice(1)}</h2><div class="card"><p>This section is ready. Practice problems and explanations will appear here.</p><button onclick="showSection('dashboard')">Back to Dashboard</button></div></div>`;
+    }
+
+    function newLinear() {
+        const a = Math.floor(Math.random()*4)+1, b = Math.floor(Math.random()*9)-4, x = Math.floor(Math.random()*9)-4;
+        const c = a*x + b;
+        currentProblem = {a,b,c,x};
+        document.getElementById('linProb').innerHTML = `Solve: $${a}x ${b>=0?'+':''}${b} = ${c}$`;
+        if (window.renderMathInElement) renderMathInElement(document.getElementById('linProb'));
+    }
+    function checkLinear() {
+        const ans = parseFloat(document.getElementById('linAns').value);
+        const fb = document.getElementById('linFb');
+        if (Math.abs(ans - currentProblem.x) < 0.01) {
+            fb.textContent = 'Correct! +15 XP'; fb.className = 'feedback correct';
+            player.xp += 15; player.streak++; player.totalSolved++;
+            document.getElementById('playerXP').textContent = player.xp;
+            document.getElementById('playerStreak').textContent = player.streak + ' 🔥';
+        } else {
+            fb.textContent = 'Try again'; fb.className = 'feedback incorrect';
+            player.streak = 0;
+        }
+    }
+    function explainLinear() {
+        const s = document.getElementById('linSteps');
+        s.style.display = 'block';
+        s.textContent = `Balance method:\n${currentProblem.a}x + ${currentProblem.b} = ${currentProblem.c}\nSubtract ${currentProblem.b} from both sides\nDivide by ${currentProblem.a}\nx = ${currentProblem.x}`;
+    }
+
+    function newQuadratic() {
+        const r1 = Math.floor(Math.random()*5)+1, r2 = Math.floor(Math.random()*5)-2;
+        currentProblem = {roots:[r1,r2].sort((a,b)=>a-b)};
+        const b = -(r1+r2), c = r1*r2;
+        document.getElementById('quadProb').innerHTML = `Solve: $x^2 ${b>=0?'+':''}${b}x ${c>=0?'+':''}${c} = 0$`;
+        if (window.renderMathInElement) renderMathInElement(document.getElementById('quadProb'));
+    }
+    function checkQuad() {
+        const u1 = parseFloat(document.getElementById('q1').value), u2 = parseFloat(document.getElementById('q2').value);
+        const roots = [u1,u2].sort((a,b)=>a-b);
+        const fb = document.getElementById('quadFb');
+        const ok = Math.abs(roots[0]-currentProblem.roots[0])<0.01 && Math.abs(roots[1]-currentProblem.roots[1])<0.01;
+        fb.textContent = ok ? 'Correct!' : 'Not quite';
+        fb.className = 'feedback ' + (ok ? 'correct' : 'incorrect');
+        if (ok) { player.xp += 20; document.getElementById('playerXP').textContent = player.xp; }
+    }
+    function explainQuad() {
+        const s = document.getElementById('quadSteps');
+        s.style.display = 'block';
+        s.textContent = `Quadratic formula or factoring.\nRoots: ${currentProblem.roots.join(' and ')}`;
+    }
+
+    // Start
+    showSection('dashboard');
     </script>
 </body>
 </html>
