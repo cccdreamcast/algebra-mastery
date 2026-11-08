@@ -56,24 +56,25 @@ function go(section) {
         if (section === 'polynomials') newPoly();
         if (section === 'exponents') newExp();
         if (section === 'rational') newRat();
-    }, 50);
+    }, 30);
 }
 
 const content = {
     dashboard: () => `<div class="section"><h2>Welcome to Algebra Mastery</h2>
-        <div class="card"><p>Click any topic in the sidebar. Solve problems to earn XP and build your streak.</p>
-        <button onclick="go('linear')">Start with Linear Equations</button></div>
+        <div class="card"><p>Practice algebra topics, earn XP, and build streaks. Click any topic in the sidebar.</p>
+        <button onclick="go('linear')">Start with Linear Equations</button>
+        <button class="secondary" onclick="go('tools')">Open Tools</button></div>
         <div class="card"><h3>Your Stats</h3><p>Level <strong>${level}</strong> • ${xp} XP • Streak ${streak}</p></div></div>`,
     linear: () => `<div class="section"><h2>⚖️ Linear Equations</h2>
-        <div class="card"><div id="linP" class="problem">Loading problem...</div>
+        <div class="card"><div id="linP" class="problem">Loading...</div>
         <div class="input-group"><input type="number" step="any" id="linA" placeholder="x =">
         <button onclick="checkLin()">Check</button>
         <button class="secondary" onclick="explainLin()">Explain Steps</button>
-        <button class="secondary" onclick="newLin()">New Problem</button></div>
+        <button class="secondary" onclick="newLin()">New</button></div>
         <div id="linF" class="feedback"></div>
         <div id="linS" class="steps" style="display:none"></div></div></div>`,
     quadratic: () => `<div class="section"><h2>📈 Quadratic Equations</h2>
-        <div class="card"><div id="quadP" class="problem">Loading problem...</div>
+        <div class="card"><div id="quadP" class="problem">Loading...</div>
         <div class="input-group"><input type="number" step="any" id="q1" placeholder="x₁"><input type="number" step="any" id="q2" placeholder="x₂">
         <button onclick="checkQuad()">Check</button>
         <button class="secondary" onclick="explainQuad()">Explain Steps</button>
@@ -81,14 +82,15 @@ const content = {
         <div id="quadF" class="feedback"></div>
         <div id="quadS" class="steps" style="display:none"></div></div></div>`,
     systems: () => `<div class="section"><h2>🔗 Systems of Equations</h2>
-        <div class="card"><div id="sysP" class="problem">Loading problem...</div>
+        <div class="card"><div id="sysP" class="problem">Loading...</div>
         <div class="input-group"><input type="number" step="any" id="sx" placeholder="x"><input type="number" step="any" id="sy" placeholder="y">
         <button onclick="checkSys()">Check</button>
         <button class="secondary" onclick="explainSys()">Explain</button>
         <button class="secondary" onclick="newSys()">New</button></div>
-        <div id="sysF" class="feedback"></div></div></div>`,
+        <div id="sysF" class="feedback"></div>
+        <div id="sysS" class="steps" style="display:none"></div></div></div>`,
     polynomials: () => `<div class="section"><h2>🧩 Polynomials & Factoring</h2>
-        <div class="card"><div id="polyP" class="problem">Loading problem...</div>
+        <div class="card"><div id="polyP" class="problem">Loading...</div>
         <div class="input-group"><input type="text" id="polyA" placeholder="(x-2)(x-3)">
         <button onclick="checkPoly()">Check</button>
         <button class="secondary" onclick="explainPoly()">Explain</button>
@@ -96,33 +98,35 @@ const content = {
         <div id="polyF" class="feedback"></div>
         <div id="polyS" class="steps" style="display:none"></div></div></div>`,
     exponents: () => `<div class="section"><h2>⚡ Exponents & Radicals</h2>
-        <div class="card"><div id="expP" class="problem">Loading problem...</div>
+        <div class="card"><div id="expP" class="problem">Loading...</div>
         <div class="input-group"><input type="text" id="expA" placeholder="Simplified form">
         <button onclick="checkExp()">Check</button>
         <button class="secondary" onclick="explainExp()">Explain</button>
         <button class="secondary" onclick="newExp()">New</button></div>
-        <div id="expF" class="feedback"></div></div></div>`,
+        <div id="expF" class="feedback"></div>
+        <div id="expS" class="steps" style="display:none"></div></div></div>`,
     rational: () => `<div class="section"><h2>➗ Rational Expressions</h2>
-        <div class="card"><div id="ratP" class="problem">Loading problem...</div>
+        <div class="card"><div id="ratP" class="problem">Loading...</div>
         <div class="input-group"><input type="text" id="ratA" placeholder="Simplified form">
         <button onclick="checkRat()">Check</button>
         <button class="secondary" onclick="explainRat()">Explain</button>
         <button class="secondary" onclick="newRat()">New</button></div>
-        <div id="ratF" class="feedback"></div></div></div>`,
+        <div id="ratF" class="feedback"></div>
+        <div id="ratS" class="steps" style="display:none"></div></div></div>`,
     tools: () => `<div class="section"><h2>🛠️ Tools</h2>
-        <div class="card"><h3>Linear Solver</h3>
+        <div class="card"><h3>Linear Solver (ax + b = c)</h3>
         <div class="input-group"><input id="ta" type="number" value="2" style="width:70px">x + <input id="tb" type="number" value="3" style="width:70px"> = <input id="tc" type="number" value="7" style="width:70px">
         <button onclick="solveLin()">Solve</button></div><div id="tRes" class="steps"></div></div>
-        <div class="card"><h3>Quadratic Solver</h3>
+        <div class="card"><h3>Quadratic Solver (ax² + bx + c = 0)</h3>
         <div class="input-group"><input id="qa" type="number" value="1" style="width:60px">x² + <input id="qb" type="number" value="-5" style="width:60px">x + <input id="qc" type="number" value="6" style="width:60px">
         <button onclick="solveQuad()">Solve</button></div><div id="qRes" class="steps"></div></div></div>`
 };
 
 function newLin() {
-    const a = 1 + Math.floor(Math.random()*4);
-    const b = Math.floor(Math.random()*11) - 5;
-    const x = Math.floor(Math.random()*11) - 5;
-    problem = {type:'lin', a, b, c: a*x + b, x};
+    const a = 1 + Math.floor(Math.random()*5);
+    const b = Math.floor(Math.random()*13) - 6;
+    const x = Math.floor(Math.random()*13) - 6;
+    problem = {a, b, c: a*x + b, x};
     const el = document.getElementById('linP');
     if (el) { el.innerHTML = `Solve: $${a}x ${b>=0?'+':''}${b} = ${problem.c}$`; renderMath(el); }
 }
@@ -132,19 +136,19 @@ function checkLin() {
     if (Math.abs(ans - problem.x) < 0.001) {
         fb.textContent = 'Correct! +15 XP'; fb.className = 'feedback correct'; addXP(15);
     } else {
-        fb.textContent = 'Incorrect. Click Explain Steps.'; fb.className = 'feedback incorrect'; streak = 0; updateStats();
+        fb.textContent = 'Incorrect. Use Explain Steps.'; fb.className = 'feedback incorrect'; streak = 0; updateStats();
     }
 }
 function explainLin() {
     const s = document.getElementById('linS');
     s.style.display = 'block';
-    s.textContent = `Balance method:\n${problem.a}x + ${problem.b} = ${problem.c}\nSubtract ${problem.b} from both sides:\n${problem.a}x = ${problem.c - problem.b}\nDivide both sides by ${problem.a}:\nx = ${problem.x}`;
+    s.textContent = `Balance method:\nStart: ${problem.a}x + ${problem.b} = ${problem.c}\nSubtract ${problem.b} from both sides:\n${problem.a}x = ${problem.c - problem.b}\nDivide both sides by ${problem.a}:\nx = ${problem.x}`;
 }
 
 function newQuad() {
-    const r1 = 1 + Math.floor(Math.random()*5);
-    const r2 = Math.floor(Math.random()*7) - 3;
-    problem = {type:'quad', roots: [r1, r2].sort((a,b)=>a-b)};
+    const r1 = 1 + Math.floor(Math.random()*6);
+    const r2 = Math.floor(Math.random()*8) - 3;
+    problem = {roots: [r1, r2].sort((a,b)=>a-b)};
     const b = -(r1 + r2), c = r1 * r2;
     const el = document.getElementById('quadP');
     if (el) { el.innerHTML = `Solve: $x^2 ${b>=0?'+':''}${b}x ${c>=0?'+':''}${c} = 0$`; renderMath(el); }
@@ -155,21 +159,22 @@ function checkQuad() {
     const roots = [u1, u2].sort((a,b)=>a-b);
     const ok = Math.abs(roots[0] - problem.roots[0]) < 0.01 && Math.abs(roots[1] - problem.roots[1]) < 0.01;
     const fb = document.getElementById('quadF');
-    fb.textContent = ok ? 'Correct! +20 XP' : 'Not quite. Try Explain.';
+    fb.textContent = ok ? 'Correct! +20 XP' : 'Not quite.';
     fb.className = 'feedback ' + (ok ? 'correct' : 'incorrect');
-    if (ok) addXP(20);
+    if (ok) addXP(20); else streak = 0;
+    updateStats();
 }
 function explainQuad() {
     document.getElementById('quadS').style.display = 'block';
-    document.getElementById('quadS').textContent = `Roots: ${problem.roots.join(' and ')}\n\nYou can factor into (x - root1)(x - root2) or use the quadratic formula.`;
+    document.getElementById('quadS').textContent = `Roots: ${problem.roots.join(' and ')}\n\nFactor: (x - ${problem.roots[0]})(x - ${problem.roots[1]})\nOr use quadratic formula.`;
 }
 
 function newSys() {
-    const x = 1 + Math.floor(Math.random()*5);
-    const y = 1 + Math.floor(Math.random()*5);
-    problem = {type:'sys', x, y};
+    const x = 1 + Math.floor(Math.random()*6);
+    const y = 1 + Math.floor(Math.random()*6);
+    problem = {x, y};
     const el = document.getElementById('sysP');
-    if (el) { el.innerHTML = `Solve the system:<br>$$\\begin{cases} x + y = ${x+y} \\\\ 2x - y = ${2*x - y} \\end{cases}$$`; renderMath(el); }
+    if (el) { el.innerHTML = `Solve:<br>$$\\begin{cases} x + y = ${x+y} \\\\ 2x - y = ${2*x - y} \\end{cases}$$`; renderMath(el); }
 }
 function checkSys() {
     const ux = parseFloat(document.getElementById('sx').value);
@@ -178,36 +183,41 @@ function checkSys() {
     const fb = document.getElementById('sysF');
     fb.textContent = ok ? 'Correct! +25 XP' : 'Incorrect';
     fb.className = 'feedback ' + (ok ? 'correct' : 'incorrect');
-    if (ok) addXP(25);
+    if (ok) addXP(25); else streak = 0;
+    updateStats();
 }
 function explainSys() {
-    alert(`Solution: x = ${problem.x}, y = ${problem.y}\n\nAdd the equations or use substitution.`);
+    const s = document.getElementById('sysS');
+    s.style.display = 'block';
+    s.textContent = `Solution: x = ${problem.x}, y = ${problem.y}\n\nAdd the two equations to eliminate y, then substitute.`;
 }
 
 function newPoly() {
-    const r1 = 1 + Math.floor(Math.random()*4);
-    const r2 = 1 + Math.floor(Math.random()*4);
-    problem = {type:'poly', roots:[r1,r2], factored:`(x-${r1})(x-${r2})`};
+    const r1 = 1 + Math.floor(Math.random()*5);
+    const r2 = 1 + Math.floor(Math.random()*5);
+    problem = {roots:[r1,r2], factored:`(x-${r1})(x-${r2})`};
     const el = document.getElementById('polyP');
     if (el) { el.innerHTML = `Factor: $x^2 - ${r1+r2}x + ${r1*r2}$`; renderMath(el); }
 }
 function checkPoly() {
-    const user = (document.getElementById('polyA').value || '').replace(/\s/g,'');
+    const user = (document.getElementById('polyA').value || '').replace(/\s/g,'').toLowerCase();
     const ok = user.includes(problem.roots[0]) && user.includes(problem.roots[1]);
-    document.getElementById('polyF').textContent = ok ? 'Correct!' : 'Try again';
+    document.getElementById('polyF').textContent = ok ? 'Correct! +15 XP' : 'Look for two numbers that multiply to the constant and add to the middle.';
     document.getElementById('polyF').className = 'feedback ' + (ok ? 'correct' : 'incorrect');
-    if (ok) addXP(15);
+    if (ok) addXP(15); else streak = 0;
+    updateStats();
 }
 function explainPoly() {
     document.getElementById('polyS').style.display = 'block';
-    document.getElementById('polyS').textContent = `Factored form: ${problem.factored}`;
+    document.getElementById('polyS').textContent = `Factored form: ${problem.factored}\n\nThe two numbers are ${problem.roots[0]} and ${problem.roots[1]}.`;
 }
 
 function newExp() {
     const opts = [
-        {expr:'$2^3 \\cdot 2^4$', ans:['2^7','128'], steps:'Add exponents: 2^{3+4}=2^7'},
-        {expr:'$(3^2)^3$', ans:['3^6','729'], steps:'Multiply exponents: 3^{6}'},
-        {expr:'$\\sqrt{49}$', ans:['7'], steps:'Square root of 49 is 7'}
+        {expr:'$2^3 \\cdot 2^4$', ans:['2^7','128'], steps:'Add the exponents: 2^{3+4} = 2^7 = 128'},
+        {expr:'$(3^2)^3$', ans:['3^6','729'], steps:'Multiply the exponents: 3^{2×3} = 3^6 = 729'},
+        {expr:'$\\sqrt{64}$', ans:['8'], steps:'The square root of 64 is 8'},
+        {expr:'$4^{1/2}$', ans:['2'], steps:'4^{1/2} is the same as √4 = 2'}
     ];
     problem = opts[Math.floor(Math.random()*opts.length)];
     const el = document.getElementById('expP');
@@ -216,49 +226,59 @@ function newExp() {
 function checkExp() {
     const user = (document.getElementById('expA').value || '').toLowerCase().replace(/\s/g,'');
     const ok = problem.ans.some(a => user.includes(a.toLowerCase()));
-    document.getElementById('expF').textContent = ok ? 'Correct!' : 'Incorrect';
+    document.getElementById('expF').textContent = ok ? 'Correct! +15 XP' : 'Try again';
     document.getElementById('expF').className = 'feedback ' + (ok ? 'correct' : 'incorrect');
-    if (ok) addXP(15);
+    if (ok) addXP(15); else streak = 0;
+    updateStats();
 }
 function explainExp() {
-    alert(problem.steps + '\nPossible answers: ' + problem.ans.join(' or '));
+    const s = document.getElementById('expS');
+    s.style.display = 'block';
+    s.textContent = problem.steps + '\nPossible answers: ' + problem.ans.join(' or ');
 }
 
 function newRat() {
-    const r = 1 + Math.floor(Math.random()*4);
-    problem = {simplified: `x + ${r}`};
+    const r = 1 + Math.floor(Math.random()*5);
+    problem = {r, simplified: `x + ${r}`};
     const el = document.getElementById('ratP');
     if (el) { el.innerHTML = `Simplify: $\\frac{x^2 - ${r*r}}{x - ${r}}$`; renderMath(el); }
 }
 function checkRat() {
-    const user = (document.getElementById('ratA').value || '').replace(/\s/g,'');
+    const user = (document.getElementById('ratA').value || '').replace(/\s/g,'').toLowerCase();
     const ok = user.includes(problem.simplified.replace(/\s/g,''));
-    document.getElementById('ratF').textContent = ok ? 'Correct!' : 'Factor and cancel';
+    document.getElementById('ratF').textContent = ok ? 'Correct! +15 XP' : 'Factor the numerator as a difference of squares and cancel.';
     document.getElementById('ratF').className = 'feedback ' + (ok ? 'correct' : 'incorrect');
-    if (ok) addXP(15);
+    if (ok) addXP(15); else streak = 0;
+    updateStats();
 }
 function explainRat() {
-    alert(`Difference of squares in the numerator.\nSimplified: ${problem.simplified} (x ≠ root)`);
+    const s = document.getElementById('ratS');
+    s.style.display = 'block';
+    s.textContent = `Numerator is a difference of squares: (x - ${problem.r})(x + ${problem.r})\nCancel the common (x - ${problem.r}) factor.\nSimplified form: ${problem.simplified} (where x ≠ ${problem.r})`;
 }
 
 function solveLin() {
     const a = +document.getElementById('ta').value;
     const b = +document.getElementById('tb').value;
     const c = +document.getElementById('tc').value;
-    document.getElementById('tRes').textContent = a === 0 ? 'Invalid coefficient' : `x = ${((c - b) / a).toFixed(4)}`;
+    document.getElementById('tRes').textContent = a === 0 ? 'Coefficient of x cannot be zero.' : `x = ${((c - b) / a).toFixed(4)}`;
 }
 function solveQuad() {
     const a = +document.getElementById('qa').value;
     const b = +document.getElementById('qb').value;
     const c = +document.getElementById('qc').value;
+    if (a === 0) { document.getElementById('qRes').textContent = 'Not a quadratic.'; return; }
     const disc = b*b - 4*a*c;
     let text = `Discriminant: ${disc}\n`;
     if (disc > 0) {
         const x1 = (-b + Math.sqrt(disc))/(2*a);
         const x2 = (-b - Math.sqrt(disc))/(2*a);
-        text += `x₁ = ${x1.toFixed(4)}\nx₂ = ${x2.toFixed(4)}`;
-    } else if (disc === 0) text += `x = ${(-b/(2*a)).toFixed(4)}`;
-    else text += 'No real roots';
+        text += `Two real roots:\nx₁ = ${x1.toFixed(4)}\nx₂ = ${x2.toFixed(4)}`;
+    } else if (disc === 0) {
+        text += `One real root:\nx = ${(-b/(2*a)).toFixed(4)}`;
+    } else {
+        text += 'No real roots (complex roots).';
+    }
     document.getElementById('qRes').textContent = text;
 }
 
