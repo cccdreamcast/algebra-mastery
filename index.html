@@ -53,7 +53,7 @@ function go(section) {
   main.innerHTML = content[section]();
   renderMath(main);
   setTimeout(function() {
-    if (section === 'linear') newLin();
+    if (section === 'linear') { newLin(); }
     if (section === 'quadratic') newQuad();
     if (section === 'systems') newSys();
     if (section === 'polynomials') newPoly();
@@ -68,7 +68,7 @@ var content = {
     return '<div class="section"><h2>Welcome to Algebra Mastery</h2><div class="card"><p>Practice algebra topics. Use Graph Test to verify the canvas is working.</p><button onclick="go(\'graphtest\')">Open Graph Test</button><button class="secondary" onclick="go(\'linear\')">Linear Equations</button></div><div class="card"><h3>Your Stats</h3><p>Level <strong>' + level + '</strong> • ' + xp + ' XP • Streak ' + streak + '</p></div></div>';
   },
   linear: function() {
-    return '<div class="section"><h2>⚖️ Linear Equations</h2><div class="card"><div id="linP" class="problem">Loading...</div><div class="input-group"><input type="number" step="any" id="linA" placeholder="x ="><button onclick="checkLin()">Check</button><button class="secondary" onclick="explainLin()">Explain in Long Form</button><button class="secondary" onclick="newLin()">New</button></div><div id="linF" class="feedback"></div><div id="linS" class="steps" style="display:none"></div></div></div>';
+    return '<div class="section"><h2>⚖️ Linear Equations</h2><div class="card"><div id="linP" class="problem">Loading...</div><div class="input-group"><input type="number" step="any" id="linA" placeholder="x ="><button onclick="checkLin()">Check</button><button class="secondary" onclick="explainLin()">Explain in Long Form</button><button class="secondary" onclick="newLin()">New</button></div><div id="linF" class="feedback"></div><div id="linS" class="steps" style="display:none"></div><canvas id="linCanvas" width="500" height="280"></canvas><p class="graph-note">Graph of the line with green dot at the solution (x-intercept).</p></div></div>';
   },
   quadratic: function() {
     return '<div class="section"><h2>📈 Quadratic Equations</h2><div class="card"><div id="quadP" class="problem">Loading...</div><div class="input-group"><input type="number" step="any" id="q1" placeholder="x1"><input type="number" step="any" id="q2" placeholder="x2"><button onclick="checkQuad()">Check</button><button class="secondary" onclick="explainQuad()">Explain in Long Form</button><button class="secondary" onclick="newQuad()">New</button></div><div id="quadF" class="feedback"></div><div id="quadS" class="steps" style="display:none"></div></div></div>';
@@ -127,6 +127,49 @@ function drawTestGraph() {
   ctx.fillText('x = 1.5', pxInt + 10, cy - 12);
 }
 
+function drawLinGraph() {
+  var canvas = document.getElementById('linCanvas');
+  if (!canvas || !problem) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = '#8f857c';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, h/2); ctx.lineTo(w, h/2);
+  ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h);
+  ctx.stroke();
+  var scale = 25, cx = w/2, cy = h/2;
+  var a = problem.a, b = problem.b, c = problem.c;
+  ctx.strokeStyle = '#c9895a';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  var started = false;
+  for (var px = 0; px <= w; px++) {
+    var x = (px - cx) / scale;
+    var y = (c - a * x - b) / 1; // since y = c - a*x - b, but we want line of a*x + b = c rearranged
+    y = c - a * x - b;
+    var py = cy - y * scale;
+    if (py > -50 && py < h + 50) {
+      if (!started) { ctx.moveTo(px, py); started = true; }
+      else ctx.lineTo(px, py);
+    }
+  }
+  ctx.stroke();
+  // x-intercept (solution)
+  var xInt = problem.x;
+  var pxInt = cx + xInt * scale;
+  if (pxInt >= 0 && pxInt <= w) {
+    ctx.fillStyle = '#4ade80';
+    ctx.beginPath();
+    ctx.arc(pxInt, cy, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#f3ece4';
+    ctx.font = '13px sans-serif';
+    ctx.fillText('x = ' + xInt, pxInt + 10, cy - 10);
+  }
+}
+
 function newLin() {
   var a = 1 + Math.floor(Math.random() * 5);
   var b = Math.floor(Math.random() * 13) - 6;
@@ -134,6 +177,7 @@ function newLin() {
   problem = {a: a, b: b, c: a * x + b, x: x};
   var el = document.getElementById('linP');
   if (el) { el.innerHTML = 'Solve: $' + a + 'x ' + (b >= 0 ? '+' : '') + b + ' = ' + problem.c + '$'; renderMath(el); }
+  setTimeout(drawLinGraph, 30);
 }
 function checkLin() {
   var ans = parseFloat(document.getElementById('linA').value);
