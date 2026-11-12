@@ -30,7 +30,6 @@ canvas { background: #0c0b0a; border-radius: 8px; max-width: 100%; margin: 1rem 
 <button class="nav-btn" onclick="go('polynomials')">🧩 Polynomials</button>
 <button class="nav-btn" onclick="go('exponents')">⚡ Exponents</button>
 <button class="nav-btn" onclick="go('rational')">➗ Rational</button>
-<button class="nav-btn" onclick="go('graphtest')">📊 Graph Test</button>
 <button class="nav-btn" onclick="go('tools')">🛠️ Tools</button>
 </nav>
 </aside>
@@ -59,13 +58,12 @@ function go(section) {
     if (section === 'polynomials') newPoly();
     if (section === 'exponents') newExp();
     if (section === 'rational') newRat();
-    if (section === 'graphtest') drawTestGraph();
   }, 50);
 }
 
 var content = {
   dashboard: function() {
-    return '<div class="section"><h2>Welcome to Algebra Mastery</h2><div class="card"><p>Practice algebra topics. Use Graph Test to verify the canvas is working.</p><button onclick="go(\'graphtest\')">Open Graph Test</button><button class="secondary" onclick="go(\'linear\')">Linear Equations</button></div><div class="card"><h3>Your Stats</h3><p>Level <strong>' + level + '</strong> • ' + xp + ' XP • Streak ' + streak + '</p></div></div>';
+    return '<div class="section"><h2>Welcome to Algebra Mastery</h2><div class="card"><p>Practice algebra topics, earn XP, and build streaks. Every problem has a detailed long-form explanation.</p><button onclick="go(\'linear\')">Start with Linear Equations</button><button class="secondary" onclick="go(\'tools\')">Open Tools</button></div><div class="card"><h3>Your Stats</h3><p>Level <strong>' + level + '</strong> • ' + xp + ' XP • Streak ' + streak + '</p></div></div>';
   },
   linear: function() {
     return '<div class="section"><h2>⚖️ Linear Equations</h2><div class="card"><div id="linP" class="problem">Loading...</div><div class="input-group"><input type="number" step="any" id="linA" placeholder="x ="><button onclick="checkLin()">Check</button><button class="secondary" onclick="explainLin()">Explain in Long Form</button><button class="secondary" onclick="newLin()">New</button></div><div id="linF" class="feedback"></div><div id="linS" class="steps" style="display:none"></div><canvas id="linCanvas" width="500" height="280"></canvas><p class="graph-note">Graph of the line with green dot at the solution (x-intercept).</p></div></div>';
@@ -85,49 +83,12 @@ var content = {
   rational: function() {
     return '<div class="section"><h2>➗ Rational</h2><div class="card"><div id="ratP" class="problem">Loading...</div><div class="input-group"><input type="text" id="ratA" placeholder="Simplified"><button onclick="checkRat()">Check</button><button class="secondary" onclick="explainRat()">Explain</button><button class="secondary" onclick="newRat()">New</button></div><div id="ratF" class="feedback"></div><div id="ratS" class="steps" style="display:none"></div></div></div>';
   },
-  graphtest: function() {
-    return '<div class="section"><h2>📊 Graph Test</h2><div class="card"><p>This page draws a simple test graph to confirm the canvas is working.</p><canvas id="testCanvas" width="500" height="300"></canvas><p class="graph-note">You should see a copper-colored line with a green dot at the x-intercept.</p><button onclick="drawTestGraph()">Redraw Graph</button></div></div>';
-  },
   tools: function() {
     return '<div class="section"><h2>🛠️ Tools</h2><div class="card"><h3>Linear Solver</h3><div class="input-group"><input id="ta" type="number" value="2" style="width:70px">x + <input id="tb" type="number" value="3" style="width:70px"> = <input id="tc" type="number" value="7" style="width:70px"><button onclick="solveLin()">Solve</button></div><div id="tRes" class="steps"></div></div></div>';
   }
 };
 
-function drawTestGraph() {
-  var canvas = document.getElementById('testCanvas');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var w = canvas.width, h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-  ctx.strokeStyle = '#8f857c';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(0, h/2); ctx.lineTo(w, h/2);
-  ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h);
-  ctx.stroke();
-  var scale = 30, cx = w/2, cy = h/2;
-  ctx.strokeStyle = '#c9895a';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  for (var px = 0; px <= w; px++) {
-    var x = (px - cx) / scale;
-    var y = 2 * x - 3;
-    var py = cy - y * scale;
-    if (px === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-  }
-  ctx.stroke();
-  var xInt = 1.5;
-  var pxInt = cx + xInt * scale;
-  ctx.fillStyle = '#4ade80';
-  ctx.beginPath();
-  ctx.arc(pxInt, cy, 7, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#f3ece4';
-  ctx.font = '14px sans-serif';
-  ctx.fillText('x = 1.5', pxInt + 10, cy - 12);
-}
-
-function drawLinGraph() {
+function drawLinGraph(showAnswer) {
   var canvas = document.getElementById('linCanvas');
   if (!canvas || !problem) return;
   var ctx = canvas.getContext('2d');
@@ -147,8 +108,7 @@ function drawLinGraph() {
   var started = false;
   for (var px = 0; px <= w; px++) {
     var x = (px - cx) / scale;
-    var y = (c - a * x - b) / 1; // since y = c - a*x - b, but we want line of a*x + b = c rearranged
-    y = c - a * x - b;
+    var y = c - a * x - b;
     var py = cy - y * scale;
     if (py > -50 && py < h + 50) {
       if (!started) { ctx.moveTo(px, py); started = true; }
@@ -156,17 +116,19 @@ function drawLinGraph() {
     }
   }
   ctx.stroke();
-  // x-intercept (solution)
-  var xInt = problem.x;
-  var pxInt = cx + xInt * scale;
-  if (pxInt >= 0 && pxInt <= w) {
-    ctx.fillStyle = '#4ade80';
-    ctx.beginPath();
-    ctx.arc(pxInt, cy, 7, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#f3ece4';
-    ctx.font = '13px sans-serif';
-    ctx.fillText('x = ' + xInt, pxInt + 10, cy - 10);
+  // Only show the solution dot and label after the user answers correctly
+  if (showAnswer) {
+    var xInt = problem.x;
+    var pxInt = cx + xInt * scale;
+    if (pxInt >= 0 && pxInt <= w) {
+      ctx.fillStyle = '#4ade80';
+      ctx.beginPath();
+      ctx.arc(pxInt, cy, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#f3ece4';
+      ctx.font = '13px sans-serif';
+      ctx.fillText('x = ' + xInt, pxInt + 10, cy - 10);
+    }
   }
 }
 
@@ -177,13 +139,23 @@ function newLin() {
   problem = {a: a, b: b, c: a * x + b, x: x};
   var el = document.getElementById('linP');
   if (el) { el.innerHTML = 'Solve: $' + a + 'x ' + (b >= 0 ? '+' : '') + b + ' = ' + problem.c + '$'; renderMath(el); }
-  setTimeout(drawLinGraph, 30);
+  setTimeout(function() { drawLinGraph(false); }, 30);
 }
 function checkLin() {
   var ans = parseFloat(document.getElementById('linA').value);
   var fb = document.getElementById('linF');
-  if (Math.abs(ans - problem.x) < 0.001) { fb.textContent = 'Correct! +15 XP'; fb.className = 'feedback correct'; addXP(15); }
-  else { fb.textContent = 'Incorrect.'; fb.className = 'feedback incorrect'; streak = 0; updateStats(); }
+  if (Math.abs(ans - problem.x) < 0.001) {
+    fb.textContent = 'Correct! +15 XP';
+    fb.className = 'feedback correct';
+    addXP(15);
+    drawLinGraph(true);
+  } else {
+    fb.textContent = 'Incorrect.';
+    fb.className = 'feedback incorrect';
+    streak = 0;
+    updateStats();
+    drawLinGraph(false);
+  }
 }
 function explainLin() {
   var s = document.getElementById('linS');
